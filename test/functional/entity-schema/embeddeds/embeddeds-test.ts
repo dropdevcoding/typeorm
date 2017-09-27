@@ -22,7 +22,7 @@ describe("entity-schema", () => {
     after(() => closeTestingConnections(connections));
 
     describe("embeddeds", function() {
-        it.only("should define embeddeds propertly", () => Promise.all(connections.map(async connection => {
+        it("should define embeddeds propertly", () => Promise.all(connections.map(async connection => {
           const postRepository = connection.getRepository(Post);
 
           const post = new Post();
