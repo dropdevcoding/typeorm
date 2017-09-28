@@ -1,7 +1,8 @@
 import {ColumnType} from "../driver/types/ColumnTypes";
+import {ValueTransformer} from "../decorator/options/ValueTransformer";
 
 export interface EntitySchemaColumn {
-    
+
     /**
      * Indicates if this column is a primary column.
      */
@@ -96,4 +97,8 @@ export interface EntitySchemaColumn {
      */
     collation?: string; // todo: looks like this is not used
 
+    /**
+     * Adds a value transformer to the column
+     */
+    transformer?: ValueTransformer;
 }

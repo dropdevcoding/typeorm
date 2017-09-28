@@ -69,7 +69,8 @@ export class EntitySchemaTransformer {
                         comment: columnSchema.comment,
                         default: columnSchema.default,
                         precision: columnSchema.precision,
-                        scale: columnSchema.scale
+                        scale: columnSchema.scale,
+                        transformer: columnSchema.transformer
                     }
                 };
                 metadataArgsStorage.columns.push(columnAgrs);
@@ -103,7 +104,9 @@ export class EntitySchemaTransformer {
                             cascadeUpdate: relationSchema.cascadeUpdate,
                             cascadeRemove: relationSchema.cascadeRemove,
                             nullable: relationSchema.nullable,
-                            onDelete: relationSchema.onDelete
+                            onDelete: relationSchema.onDelete,
+                            lazy: relationSchema.isLazy || false,
+                            eager: !relationSchema.isLazy || true
                         }
                     };
 
