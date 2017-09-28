@@ -1,5 +1,6 @@
 import {ValueTransformer} from "../decorator/options/ValueTransformer";
 import {ColumnType} from "../driver/types/ColumnTypes";
+import {ValueTransformer} from "../decorator/options/ValueTransformer";
 
 export interface EntitySchemaColumn {
 

@@ -1,12 +1,17 @@
 import {EntitySchemaTable} from "./EntitySchemaTable";
 import {EntitySchemaIndex} from "./EntitySchemaIndex";
 import {EntitySchemaColumn} from "./EntitySchemaColumn";
+import {EntitySchemaEmbedded} from "./EntitySchemaEmbedded";
 import {EntitySchemaRelation} from "./EntitySchemaRelation";
 
 /**
  * Interface for entity metadata mappings stored inside "schemas" instead of models decorated by decorators.
  */
 export interface EntitySchema { // todo: make it-to-date
+    /**
+     * Defines whether this schema describes an embedded entity or not
+     */
+    embedded?: boolean;
 
     /**
      * Name of the schema it extends.
@@ -26,13 +31,20 @@ export interface EntitySchema { // todo: make it-to-date
     /**
      * Entity table's options.
      */
-    table?: EntitySchemaTable;
+    table?: EntitySchemaTable | false;
 
     /**
      * Entity column's options.
      */
     columns: {
-        [columnName: string]: EntitySchemaColumn 
+        [columnName: string]: EntitySchemaColumn
+    };
+
+    /**
+     * Embedded options
+     */
+    embeddeds: {
+        [columnName: string]: EntitySchemaEmbedded
     };
 
     /**

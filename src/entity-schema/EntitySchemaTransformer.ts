@@ -10,6 +10,7 @@ import {JoinTableOptions} from "../decorator/options/JoinTableOptions";
 import {JoinTableMultipleColumnsOptions} from "../decorator/options/JoinTableMuplipleColumnsOptions";
 import {ColumnMode} from "../metadata-args/types/ColumnMode";
 import {GeneratedMetadataArgs} from "../metadata-args/GeneratedMetadataArgs";
+import {EmbeddedMetadataArgs} from "../metadata-args/EmbeddedMetadataArgs";
 
 /**
  * Transforms entity schema into metadata args storage.
@@ -28,30 +29,30 @@ export class EntitySchemaTransformer {
         const metadataArgsStorage = new MetadataArgsStorage();
 
         schemas.forEach(schema => {
-
-            // add table metadata args from the schema
-            const table = schema.table || {} as any;
-            const tableMetadata: TableMetadataArgs = {
-                target: schema.target || schema.name,
-                name: table.name,
-                type: table.type || "regular",
-                orderBy: table.orderBy
-            };
-            metadataArgsStorage.tables.push(tableMetadata);
-
+            if (!schema.embedded) {
+                // add table metadata args from the schema
+                const tableSchema = schema.table || {} as any;
+                const table: TableMetadataArgs = {
+                    target: schema.target || schema.name,
+                    name: tableSchema.name,
+                    type: tableSchema.type || "regular",
+                    orderBy: tableSchema.orderBy
+                };
+                metadataArgsStorage.tables.push(table);
+            }
             // add columns metadata args from the schema
             Object.keys(schema.columns).forEach(columnName => {
-                const tableColumn = schema.columns[columnName];
+                const columnSchema = schema.columns[columnName];
                 let mode: ColumnMode = "regular";
-                if (tableColumn.createDate)
+                if (columnSchema.createDate)
                     mode = "createDate";
-                if (tableColumn.updateDate)
+                if (columnSchema.updateDate)
                     mode = "updateDate";
-                if (tableColumn.version)
+                if (columnSchema.version)
                     mode = "version";
-                if (tableColumn.treeChildrenCount)
+                if (columnSchema.treeChildrenCount)
                     mode = "treeChildrenCount";
-                if (tableColumn.treeLevel)
+                if (columnSchema.treeLevel)
                     mode = "treeLevel";
 
                 const columnAgrs: ColumnMetadataArgs = {
@@ -59,25 +60,26 @@ export class EntitySchemaTransformer {
                     mode: mode,
                     propertyName: columnName,
                     options: {
-                        type: tableColumn.type,
-                        name: tableColumn.name,
-                        length: tableColumn.length,
-                        primary: tableColumn.primary,
-                        unique: tableColumn.unique,
-                        nullable: tableColumn.nullable,
-                        comment: tableColumn.comment,
-                        default: tableColumn.default,
-                        precision: tableColumn.precision,
-                        scale: tableColumn.scale
+                        type: columnSchema.type,
+                        name: columnSchema.name,
+                        length: columnSchema.length,
+                        primary: columnSchema.primary,
+                        unique: columnSchema.unique,
+                        nullable: columnSchema.nullable,
+                        comment: columnSchema.comment,
+                        default: columnSchema.default,
+                        precision: columnSchema.precision,
+                        scale: columnSchema.scale,
+                        transformer: columnSchema.transformer
                     }
                 };
                 metadataArgsStorage.columns.push(columnAgrs);
 
-                if (tableColumn.generated) {
+                if (columnSchema.generated) {
                     const generationArgs: GeneratedMetadataArgs = {
                         target: schema.target || schema.name,
                         propertyName: columnName,
-                        strategy: typeof tableColumn.generated === "string" ? tableColumn.generated : "increment"
+                        strategy: typeof columnSchema.generated === "string" ? columnSchema.generated : "increment"
                     };
                     metadataArgsStorage.generations.push(generationArgs);
                 }
@@ -102,7 +104,9 @@ export class EntitySchemaTransformer {
                             cascadeUpdate: relationSchema.cascadeUpdate,
                             cascadeRemove: relationSchema.cascadeRemove,
                             nullable: relationSchema.nullable,
-                            onDelete: relationSchema.onDelete
+                            onDelete: relationSchema.onDelete,
+                            lazy: relationSchema.isLazy || false,
+                            eager: !relationSchema.isLazy || true
                         }
                     };
 
@@ -152,18 +156,32 @@ export class EntitySchemaTransformer {
             // add relation metadata args from the schema
             if (schema.indices) {
                 Object.keys(schema.indices).forEach(indexName => {
-                    const tableIndex = schema.indices![indexName];
+                    const indexSchema = schema.indices![indexName];
                     const indexAgrs: IndexMetadataArgs = {
                         target: schema.target || schema.name,
                         name: indexName,
-                        unique: tableIndex.unique,
-                        sparse: tableIndex.sparse,
-                        columns: tableIndex.columns
+                        unique: indexSchema.unique,
+                        sparse: indexSchema.sparse,
+                        columns: indexSchema.columns
                     };
                     metadataArgsStorage.indices.push(indexAgrs);
                 });
             }
 
+            // add embedded metadata args from the schema
+            if (schema.embeddeds) {
+                Object.keys(schema.embeddeds).forEach(embeddedName => {
+                    const embeddedSchema = schema.embeddeds![embeddedName];
+                    const embeddedArgs: EmbeddedMetadataArgs = {
+                        target: schema.target || schema.name,
+                        propertyName: embeddedName,
+                        isArray: embeddedSchema.isArray,
+                        prefix: embeddedSchema.prefix,
+                        type: embeddedSchema.type
+                    };
+                    metadataArgsStorage.embeddeds.push(embeddedArgs);
+                });
+            }
         });
 
         return metadataArgsStorage;
