@@ -154,7 +154,7 @@ export class FindOptionsUtils {
 
             } else {
                 const parameterName = "where_" + index;
-                qb.andWhere(`${qb.alias}.${key}=:${parameterName}`)
+                qb.andWhere(`${qb.escape(qb.alias)}.${qb.escape(key)}=:${parameterName}`)
                     .setParameter(parameterName, conditions![key]);
             }
         });
