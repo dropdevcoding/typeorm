@@ -89,11 +89,12 @@ export class EntitySchemaTransformer {
             if (schema.relations) {
                 Object.keys(schema.relations).forEach(relationName => {
                     const relationSchema = schema.relations![relationName];
+                    const lazy = relationSchema.isLazy || false;
                     const relation: RelationMetadataArgs = {
                         target: schema.target || schema.name,
                         propertyName: relationName,
                         relationType: relationSchema.type,
-                        isLazy: relationSchema.isLazy || false,
+                        isLazy: lazy,
                         type: relationSchema.target,
                         inverseSideProperty: relationSchema.inverseSide,
                         isTreeParent: relationSchema.isTreeParent,
@@ -105,8 +106,8 @@ export class EntitySchemaTransformer {
                             cascadeRemove: relationSchema.cascadeRemove,
                             nullable: relationSchema.nullable,
                             onDelete: relationSchema.onDelete,
-                            lazy: relationSchema.isLazy || false,
-                            eager: !relationSchema.isLazy || true
+                            lazy: lazy,
+                            eager: !lazy
                         }
                     };
 
