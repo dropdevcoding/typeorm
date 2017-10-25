@@ -712,7 +712,14 @@ export class SubjectOperationExecutor {
 
             const value = relation.getEntityValue(entity);
             relation.joinColumns.forEach(joinColumn => {
-                valueMap!.values[joinColumn.databaseName] = value !== null && value !== undefined ? value[joinColumn.referencedColumn!.propertyName] : null; // todo: should not have a call to primaryColumn, instead join column metadata should be used
+                let resultingValue = value !== null && value !== undefined ? value[joinColumn.referencedColumn!.propertyName] : null; // todo: should not have a call to primaryColumn, instead join column metadata should be used
+                const transformer = joinColumn.referencedColumn && joinColumn.referencedColumn.transformer;
+
+                if (resultingValue !== null && transformer) {
+                    resultingValue = transformer.to(resultingValue);
+                }
+
+                valueMap!.values[joinColumn.databaseName] = resultingValue;
             });
         });
 
